@@ -36,8 +36,7 @@ class	Morphux:
 		while 1:
 			line = self.s.getLine()
 			before = 1
-			#print(line);
-			# Treat Line
+			print line
 			self.getHeadersLine(line)
 			if ("JOIN" in line):
 				self.onJoin(line)
@@ -50,6 +49,7 @@ class	Morphux:
 			elif ("PRIVMSG" in line):
 				infos = self.getInfo(line)
 				for name, function in self.before.items():
+					print name
 					if (function(self, line) == 0):
 						before = 0
 				if (before == 0):
@@ -74,15 +74,16 @@ class	Morphux:
 
 	# Get Line Information
 	# @param: string
-	def 	getInfo(self, line):
+	def 	getInfo(self, line, force = 0):
 		infos = {}
 		infos["fullLine"] = line
 		args = line.split(":", 2)[2]
 		args = args.split(" ")
 		args = filter(None, args)
-		if (args[0][0] != self.config["symbol"]):
+		if (args[0][0] != self.config["symbol"] and force == 0):
 			return False
-		args[0] = args[0][1:]
+		if (force == 0):
+			args[0] = args[0][1:]
 		infos["command"] = args[0]
 		args.remove(args[0])
 		if (infos["command"] == "help"):
@@ -149,6 +150,7 @@ class	Morphux:
 	def onJoin(self, line):
 		user = line.split(" ")
 		user[0] = user[0][1:]
+		nickName = user[0].split("!")
 		if (nickName[0] == '@'):
 			nickName = nickName[1:]
 			self.currentUsers[nickName] = {"isAdmin": 1}
@@ -235,12 +237,18 @@ class	Morphux:
 	# Show Help for a command
 	# @param: list
 	def showHelp(self, args):
-		if (args[0] in self.commands):
-			usage = self.commands[args[0]]["usage"]
-			help = self.commands[args[0]]["help"]
-			self.sendMessage(args[0] +": <"+ usage +"> ("+help+")")
+		if (len(args) != 0):
+			if (args[0] in self.commands):
+				usage = self.commands[args[0]]["usage"]
+				help = self.commands[args[0]]["help"]
+				self.sendMessage(args[0] +": <"+ usage +"> ("+help+")")
+			else:
+				self.sendMessage("Can't find command " + args[0])
 		else:
-			self.sendMessage("Can't find command " + args[0])
+			help = ""
+			for name in self.commands:
+				help = help + name + " "
+			self.sendMessage("Commands available: " + help)
 
 	# Kick an user
 	def kick(self, user, reason):
