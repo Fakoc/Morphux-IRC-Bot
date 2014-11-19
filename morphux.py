@@ -149,7 +149,11 @@ class	Morphux:
 	def onJoin(self, line):
 		user = line.split(" ")
 		user[0] = user[0][1:]
-		self.currentUsers[user[0].split("!")[0]] = True
+		if (nickName[0] == '@'):
+			nickName = nickName[1:]
+			self.currentUsers[nickName] = {"isAdmin": 1}
+		else:
+			self.currentUsers[user[0].split("!")[0]] = True
 		if (user[0].split("!")[0] == self.config['nick']):
 			return
 		for name, function in self.join.items():
